@@ -2,6 +2,8 @@
 name = "context-core"
 version = "0.1.0"
 description = "Your personal AI memory vault - local vector database and semantic search"
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.12"
 dependencies = [
     "chromadb>=1.0.0",
