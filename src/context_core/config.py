@@ -28,5 +28,18 @@ class VaultConfig:
     chat_max_context_chars: int = 8000
     debounce_seconds: float = 5.0
 
+    # Clipboard settings
+    clipboard_poll_interval: float = 5.0
+    clipboard_min_length: int = 10
+    clipboard_max_length: int = 50_000
+
+    # History settings
+    history_poll_interval: float = 30.0
+    history_batch_size: int = 20
+    history_min_command_length: int = 5
+    history_skip_commands: frozenset[str] = frozenset({
+        "ls", "cd", "pwd", "clear", "exit", "which", "echo",
+        "cat", "less", "more", "head", "tail", "man",
+    })
 
 DEFAULT_CONFIG = VaultConfig()

@@ -68,8 +68,10 @@ class TestGetClipboard:
     def test_pbpaste_failure(self, monitor):
         mock_result = MagicMock()
         mock_result.returncode = 1
+        mock_result.args = "pbpaste"
         with patch("context_core.watcher.clipboard_monitor.subprocess.run", return_value=mock_result):
-            assert monitor._get_clipboard() is None
+            with pytest.raises(subprocess.CalledProcessError):
+                monitor._get_clipboard()
 
     def test_pbpaste_timeout(self, monitor):
         with patch(

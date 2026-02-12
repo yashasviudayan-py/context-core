@@ -114,6 +114,9 @@ class FileWatcher:
             pattern = "**/*" if d.recursive else "*"
             for file_path in path.glob(pattern):
                 if file_path.is_file():
-                    if self._handler.handle_file(str(file_path)):
-                        ingested += 1
+                    try:
+                        if self._handler.handle_file(str(file_path)):
+                            ingested += 1
+                    except Exception:
+                        logger.exception(f"Error processing file: {file_path}")
         return ingested

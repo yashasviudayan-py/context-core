@@ -1,39 +1,36 @@
+import os
 import logging
 import threading
 from pathlib import Path
 
+from context_core.config import VaultConfig, DEFAULT_CONFIG
 from context_core.ingest import create_manual_document
 from context_core.vault import Vault
 from context_core.watcher.state import WatcherState
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_HISTORY_PATH = Path.home() / ".zsh_history"
-
 
 class HistoryIngestor:
-    """Periodically reads new commands from zsh_history and ingests them."""
+    """Periodically reads new commands from shell history and ingests them."""
 
-    POLL_INTERVAL = 30.0
-    BATCH_SIZE = 20
-    MIN_COMMAND_LENGTH = 5
-
-    SKIP_COMMANDS = frozenset({
-        "ls", "cd", "pwd", "clear", "exit", "which", "echo",
-        "cat", "less", "more", "head", "tail", "man",
-    })
-
-    def __init__(
-        self,
-        vault: Vault,
-        state: WatcherState,
-        history_path: Path = DEFAULT_HISTORY_PATH,
-    ):
+    def __init__(self, vault: Vault, state: WatcherState, config: VaultConfig = DEFAULT_CONFIG):
         self.vault = vault
         self.state = state
-        self.history_path = history_path
+        self.config = config
+        self.shell_name, self.history_path = self._get_history_path()
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
+
+    def _get_history_path(self) -> tuple[str | None, Path | None]:
+        shell = os.environ.get("SHELL", "").split("/")[-1]
+        if shell == "zsh":
+            return "zsh", Path.home() / ".zsh_history"
+        elif shell == "bash":
+            return "bash", Path.home() / ".bash_history"
+        else:
+            logger.warning(f"Unsupported shell for history monitoring: {shell}")
+            return None, None
 
     def start(self) -> None:
         self._stop_event.clear()
@@ -57,7 +54,7 @@ class HistoryIngestor:
                 self._ingest_new_commands()
             except Exception:
                 logger.exception("Error in history ingest")
-            self._stop_event.wait(timeout=self.POLL_INTERVAL)
+            self._stop_event.wait(timeout=self.config.history_poll_interval)
 
     def parse_history_line(self, line: str) -> str | None:
         """
@@ -73,23 +70,22 @@ class HistoryIngestor:
         if not line:
             return None
 
-        # Extended history format: ": timestamp:0;command"
-        if line.startswith(": ") and ";" in line:
+        if self.shell_name == "zsh" and line.startswith(": ") and ";" in line:
             _, _, command = line.partition(";")
             line = command.strip()
 
-        if not line or len(line) < self.MIN_COMMAND_LENGTH:
+        if not line or len(line) < self.config.history_min_command_length:
             return None
 
         base_cmd = line.split()[0].split("/")[-1]
-        if base_cmd in self.SKIP_COMMANDS:
+        if base_cmd in self.config.history_skip_commands:
             return None
 
         return line
 
     def _ingest_new_commands(self) -> int:
         """Read new lines from history file since last position. Returns count ingested."""
-        if not self.history_path.exists():
+        if self.history_path is None or not self.history_path.exists():
             return 0
 
         last_line = self.state.get_last_history_line()
@@ -120,11 +116,11 @@ class HistoryIngestor:
             doc = create_manual_document(
                 content=command,
                 source_type="terminal",
-                tags=["terminal", "zsh", "auto-captured"],
+                tags=["terminal", self.shell_name, "auto-captured"],
             )
             batch.append(doc)
 
-            if len(batch) >= self.BATCH_SIZE:
+            if len(batch) >= self.config.history_batch_size:
                 self.vault.add(batch)
                 ingested += len(batch)
                 batch = []
@@ -134,5 +130,5 @@ class HistoryIngestor:
             ingested += len(batch)
 
         self.state.set_last_history_line(len(lines))
-        logger.info(f"Ingested {ingested} commands (from line {last_line})")
+        logger.info(f"Ingested {ingested} commands from {self.shell_name} (from line {last_line})")
         return ingested
