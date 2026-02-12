@@ -1,5 +1,4 @@
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 
 from context_core.ollama_client import (
@@ -7,7 +6,6 @@ from context_core.ollama_client import (
     detect_chat_model,
     chat_stream,
     chat,
-    EMBEDDING_ONLY_MODELS,
 )
 from context_core.models import ChatMessage
 

@@ -5,7 +5,6 @@ from rich.table import Table
 from rich.syntax import Syntax
 from rich.panel import Panel
 
-from context_core.config import DEFAULT_CONFIG
 from context_core.vault import Vault
 from context_core.ingest import create_manual_document, ingest_directory
 from context_core.search import search_vault
@@ -148,9 +147,8 @@ def delete(document_id: str):
 @click.option("--interactive", "-i", is_flag=True, help="Start interactive REPL mode")
 def chat(query: str | None, model: str | None, context: int, interactive: bool):
     """Query the vault with an LLM (The Oracle)."""
-    from context_core.rag import RAGPipeline, format_context
+    from context_core.rag import RAGPipeline
     from context_core.ollama_client import detect_chat_model
-    from context_core.models import ChatMessage
     from context_core.config import VaultConfig
 
     vault = get_vault()
@@ -194,7 +192,6 @@ def _chat_single(pipeline, model: str, query: str):
 def _chat_repl(pipeline, model: str):
     """Interactive REPL mode."""
     from context_core.models import ChatMessage
-    from context_core.rag import format_context
 
     console.print(f"[bold cyan]The Oracle[/] - Interactive mode (model: {model})")
     console.print("[dim]Commands: /clear, /sources, exit[/]\n")

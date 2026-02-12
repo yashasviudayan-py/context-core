@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 
 from context_core.watcher.history_ingestor import HistoryIngestor
 from context_core.watcher.state import WatcherState

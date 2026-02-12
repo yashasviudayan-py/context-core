@@ -11,9 +11,11 @@ from context_core.watcher.file_watcher import FileWatcher
 from context_core.watcher.clipboard_monitor import ClipboardMonitor
 from context_core.watcher.history_ingestor import HistoryIngestor
 
+import tempfile
+
 logger = logging.getLogger(__name__)
 
-DEFAULT_LOG_PATH = Path("./watcher.log")
+DEFAULT_LOG_PATH = Path(tempfile.gettempdir()) / "context_core_watcher.log"
 
 
 class WatcherDaemon:
@@ -33,7 +35,7 @@ class WatcherDaemon:
             self._vault = Vault()
         return self._vault
 
-    def run(self) -> None:
+    def run(self, write_pipe: int | None = None) -> None:
         """Main entry point. Sets up signal handlers and starts all monitors."""
         self._running = True
         self.state.set_daemon_pid(os.getpid())
@@ -51,9 +53,15 @@ class WatcherDaemon:
 
         try:
             self._start_monitors()
+            if write_pipe:
+                os.write(write_pipe, b"1")
+                os.close(write_pipe)
+
             while self._running:
                 time.sleep(1.0)
         except Exception:
+            if write_pipe:
+                os.close(write_pipe)
             logger.exception("Fatal error in watcher daemon")
         finally:
             self._stop_monitors()
@@ -103,10 +111,10 @@ def start_daemon(foreground: bool = False) -> int:
     Otherwise, spawns a background process.
     Returns the daemon PID.
     """
-    import subprocess
-
+    # TODO: Implement a file-based lock to prevent race conditions
+    # where multiple processes try to start the daemon at the same time.
+    # The current check is a good-enough mitigation for now.
     state = WatcherState()
-
     existing_pid = state.get_daemon_pid()
     if existing_pid and _is_process_running(existing_pid):
         return existing_pid
@@ -116,21 +124,32 @@ def start_daemon(foreground: bool = False) -> int:
         daemon.run()
         return os.getpid()
     else:
+        read_pipe, write_pipe = os.pipe()
         proc = subprocess.Popen(
-            [sys.executable, "-m", "context_core.watcher.daemon"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            [sys.executable, "-m", "context_core.watcher.daemon", str(write_pipe)],
+            pass_fds=[write_pipe],
             start_new_session=True,
         )
-        time.sleep(1.0)
+        os.close(write_pipe)
+
+        # Wait for daemon to be ready
+        os.read(read_pipe, 1)
+        os.close(read_pipe)
+
+        time.sleep(0.1)  # Give it a moment to stabilize
         if proc.poll() is not None:
             raise RuntimeError("Daemon failed to start")
+
         state.set_daemon_pid(proc.pid)
         return proc.pid
 
 
-def stop_daemon() -> bool:
-    """Stop the running watcher daemon. Returns True if successfully stopped."""
+def stop_daemon(timeout: int = 10) -> bool:
+    """
+    Stop the running watcher daemon. Returns True if successfully stopped.
+    Args:
+        timeout: Time in seconds to wait for graceful shutdown before sending SIGKILL.
+    """
     state = WatcherState()
     pid = state.get_daemon_pid()
     if pid is None:
@@ -142,7 +161,7 @@ def stop_daemon() -> bool:
 
     os.kill(pid, signal.SIGTERM)
 
-    for _ in range(20):
+    for _ in range(timeout * 2):
         if not _is_process_running(pid):
             state.clear_daemon_pid()
             return True
@@ -170,6 +189,7 @@ def daemon_status() -> dict:
 
 
 if __name__ == "__main__":
+    write_pipe_fd = int(sys.argv[1]) if len(sys.argv) > 1 else None
     state = WatcherState()
     daemon = WatcherDaemon(state)
-    daemon.run()
+    daemon.run(write_pipe=write_pipe_fd)

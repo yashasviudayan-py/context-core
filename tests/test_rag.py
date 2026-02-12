@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch, MagicMock
 
 from context_core.rag import format_context, build_messages, RAGPipeline, SYSTEM_PROMPT

@@ -26,6 +26,7 @@ class VaultConfig:
     chat_context_results: int = 5
     chat_temperature: float = 0.7
     chat_max_context_chars: int = 8000
+    debounce_seconds: float = 5.0
 
 
 DEFAULT_CONFIG = VaultConfig()

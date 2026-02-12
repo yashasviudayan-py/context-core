@@ -1,4 +1,4 @@
-from context_core.models import Document, DocumentMetadata, SearchResult
+from context_core.models import Document, DocumentMetadata
 
 
 class TestDocumentMetadata:

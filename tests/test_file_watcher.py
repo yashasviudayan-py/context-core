@@ -1,11 +1,7 @@
 import pytest
-import time
-from pathlib import Path
-from unittest.mock import MagicMock
 
 from context_core.watcher.file_watcher import VaultFileHandler, FileWatcher
 from context_core.watcher.state import WatcherState
-from context_core.config import VaultConfig
 
 
 @pytest.fixture

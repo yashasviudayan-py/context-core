@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 class VaultFileHandler(FileSystemEventHandler):
     """Handles file create/modify events by ingesting into the vault."""
 
-    DEBOUNCE_SECONDS = 2.0
-
     def __init__(self, vault: Vault, state: WatcherState, config: VaultConfig = DEFAULT_CONFIG):
         self.vault = vault
         self.state = state
@@ -25,10 +23,12 @@ class VaultFileHandler(FileSystemEventHandler):
         self._debounce: dict[str, float] = {}
 
     def on_created(self, event):
-        if not event.is_directory:
-            self.handle_file(event.src_path)
+        self._handle_event(event)
 
     def on_modified(self, event):
+        self._handle_event(event)
+
+    def _handle_event(self, event):
         if not event.is_directory:
             self.handle_file(event.src_path)
 
@@ -47,7 +47,7 @@ class VaultFileHandler(FileSystemEventHandler):
         # Debounce
         now = time.monotonic()
         last = self._debounce.get(file_path, 0.0)
-        if now - last < self.DEBOUNCE_SECONDS:
+        if now - last < self.config.debounce_seconds:
             return False
         self._debounce[file_path] = now
 

@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+
+# Virtual environment
+.venv
+
+# Python cache
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Chroma data
+chroma_data/
+
+# Egg info
+*.egg-info
