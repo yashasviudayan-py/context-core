@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import time
+import subprocess
 from pathlib import Path
 
 from context_core.vault import Vault
