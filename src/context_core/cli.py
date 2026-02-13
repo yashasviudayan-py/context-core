@@ -15,6 +15,14 @@ console = Console()
 
 def get_vault() -> Vault:
     """Initialize Vault with Ollama health check."""
+    # Allow bypassing Ollama health check in development/CI by setting
+    # CONTEXT_CORE_DEV=1 in the environment. This is intentionally simple
+    # and should not be used in production environments.
+    import os
+
+    if os.environ.get("CONTEXT_CORE_DEV") == "1":
+        return Vault()
+
     if not check_ollama_running():
         console.print(
             "[bold red]Error:[/] Ollama is not running. Start it with: ollama serve",

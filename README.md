@@ -275,3 +275,20 @@ context-core/
 ## License
 
 [MIT](LICENSE)
+
+## Smoke test (convenience)
+
+This repo includes a small convenience script to run a quick end-to-end smoke test that:
+- starts Ollama in the background,
+- waits for it to accept connections,
+- runs `vault stats` and a non-interactive `vault chat "hello"`,
+- then attempts to stop Ollama.
+
+Run it from the repository root:
+
+```bash
+chmod +x scripts/smoke_test.sh
+./scripts/smoke_test.sh
+```
+
+Note: the script uses `nohup` to start Ollama and will attempt to kill the process it started; if you already have a running Ollama server, skip the script and instead run the CLI commands directly.
