@@ -73,6 +73,7 @@ class TestWatchCLI:
     @patch("context_core.watcher.state.WatcherState")
     def test_watch_list_with_dirs(self, mock_state_cls):
         from context_core.watcher.state import WatchedDirectory
+
         mock_state = MagicMock()
         mock_state.list_directories.return_value = [
             WatchedDirectory(id=1, path="/tmp/a", added_at="2025-01-01", recursive=True),

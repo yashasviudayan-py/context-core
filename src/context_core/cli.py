@@ -65,7 +65,9 @@ def search(query: str, n: int, source_type: str | None, ext: str | None, min_sco
     """Search the vault with a natural language query."""
     vault = get_vault()
     results = search_vault(
-        vault, query, n_results=n,
+        vault,
+        query,
+        n_results=n,
         source_type=source_type,
         file_extension=ext,
         min_similarity=min_score,
@@ -139,6 +141,7 @@ def delete(document_id: str):
 
 
 # --- Chat / Oracle ---
+
 
 @cli.command()
 @click.argument("query", required=False, default=None)
@@ -250,6 +253,7 @@ def _chat_repl(pipeline, model: str):
 
 
 # --- Watch subgroup ---
+
 
 @cli.group()
 def watch():

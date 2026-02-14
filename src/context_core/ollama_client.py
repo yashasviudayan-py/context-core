@@ -8,14 +8,16 @@ import httpx
 from context_core.models import ChatMessage
 
 # Models that are embedding-only and should not be used for chat
-EMBEDDING_ONLY_MODELS = frozenset({
-    "nomic-embed-text",
-    "all-minilm",
-    "mxbai-embed-large",
-    "snowflake-arctic-embed",
-    "bge-m3",
-    "bge-large",
-})
+EMBEDDING_ONLY_MODELS = frozenset(
+    {
+        "nomic-embed-text",
+        "all-minilm",
+        "mxbai-embed-large",
+        "snowflake-arctic-embed",
+        "bge-m3",
+        "bge-large",
+    }
+)
 
 _TIMEOUT = httpx.Timeout(10.0, read=120.0)  # Long read timeout for generation
 

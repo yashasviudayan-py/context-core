@@ -58,7 +58,8 @@ def _chunk_text(text: str, max_chars: int, overlap: int) -> list[str]:
 
 
 def read_file(
-    path: Path, config: VaultConfig = DEFAULT_CONFIG,
+    path: Path,
+    config: VaultConfig = DEFAULT_CONFIG,
 ) -> Optional[Document]:
     """Read a single file and return a Document, or None if unsupported/too large."""
     if path.suffix.lower() not in config.supported_extensions:
@@ -87,7 +88,8 @@ def read_file(
 
 
 def read_file_chunked(
-    path: Path, config: VaultConfig = DEFAULT_CONFIG,
+    path: Path,
+    config: VaultConfig = DEFAULT_CONFIG,
 ) -> list[Document]:
     """Read a file and split into chunks if needed. Returns list of Documents."""
     if path.suffix.lower() not in config.supported_extensions:

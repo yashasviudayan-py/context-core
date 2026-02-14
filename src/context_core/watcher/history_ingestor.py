@@ -81,6 +81,19 @@ class HistoryIngestor:
         if base_cmd in self.config.history_skip_commands:
             return None
 
+        # Check for secrets if filtering is enabled
+        if self.config.enable_secret_filtering:
+            from context_core.security import SecretDetector
+
+            detector = SecretDetector()
+            if detector.contains_secret(line):
+                matched_patterns = detector.get_matched_patterns(line)
+                if self.config.log_blocked_secrets:
+                    logger.warning(
+                        f"Blocked history command with potential secrets: {matched_patterns}"
+                    )
+                return None
+
         return line
 
     def _ingest_new_commands(self) -> int:

@@ -76,6 +76,20 @@ class ClipboardMonitor:
             return False
 
         text = text.strip()
+
+        # Check for secrets if filtering is enabled
+        if self.config.enable_secret_filtering:
+            from context_core.security import SecretDetector
+
+            detector = SecretDetector()
+            if detector.contains_secret(text):
+                matched_patterns = detector.get_matched_patterns(text)
+                if self.config.log_blocked_secrets:
+                    logger.warning(
+                        f"Blocked clipboard content with potential secrets: {matched_patterns}"
+                    )
+                return False
+
         current_hash = content_hash(text)
         last_hash = self.state.get_last_clipboard_hash()
 

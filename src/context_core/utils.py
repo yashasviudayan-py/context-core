@@ -18,7 +18,7 @@ def truncate_text(text: str, max_length: int = 200) -> str:
 def check_ollama_running(url: str = "http://localhost:11434") -> bool:
     """Check if Ollama server is reachable."""
     try:
-        urllib.request.urlopen(url, timeout=2)
+        urllib.request.urlopen(url, timeout=2)  # nosec B310  # Only used for localhost health check
         return True
     except Exception:
         return False

@@ -8,22 +8,27 @@ class TestSearchVault:
             Document(
                 content="Python function to sort a list using quicksort",
                 metadata=DocumentMetadata(
-                    source_type="manual", timestamp="t",
+                    source_type="manual",
+                    timestamp="t",
                     tags=["python", "algorithm"],
                 ),
             ),
             Document(
                 content="JavaScript React component for a login form",
                 metadata=DocumentMetadata(
-                    source_type="file", timestamp="t",
-                    file_path="/tmp/login.jsx", file_extension=".jsx",
+                    source_type="file",
+                    timestamp="t",
+                    file_path="/tmp/login.jsx",
+                    file_extension=".jsx",
                 ),
             ),
             Document(
                 content="SQL query to join users and orders tables",
                 metadata=DocumentMetadata(
-                    source_type="file", timestamp="t",
-                    file_path="/tmp/query.sql", file_extension=".sql",
+                    source_type="file",
+                    timestamp="t",
+                    file_path="/tmp/query.sql",
+                    file_extension=".sql",
                 ),
             ),
         ]
