@@ -66,34 +66,38 @@ class TestGetClipboard:
         mock_result = MagicMock()
         mock_result.returncode = 0
         mock_result.stdout = "clipboard text"
-        with patch(
-            "context_core.watcher.clipboard_monitor.subprocess.run", return_value=mock_result
-        ):
-            assert monitor._get_clipboard() == "clipboard text"
+        with patch("context_core.watcher.clipboard_monitor.shutil.which", return_value="/usr/bin/pbpaste"):
+            with patch(
+                "context_core.watcher.clipboard_monitor.subprocess.run", return_value=mock_result
+            ):
+                assert monitor._get_clipboard() == "clipboard text"
 
     def test_pbpaste_failure(self, monitor):
         mock_result = MagicMock()
         mock_result.returncode = 1
-        mock_result.args = "pbpaste"
-        with patch(
-            "context_core.watcher.clipboard_monitor.subprocess.run", return_value=mock_result
-        ):
-            with pytest.raises(subprocess.CalledProcessError):
-                monitor._get_clipboard()
+        mock_result.args = ["pbpaste"]
+        with patch("context_core.watcher.clipboard_monitor.shutil.which", return_value="/usr/bin/pbpaste"):
+            with patch(
+                "context_core.watcher.clipboard_monitor.subprocess.run", return_value=mock_result
+            ):
+                with pytest.raises(subprocess.CalledProcessError):
+                    monitor._get_clipboard()
 
     def test_pbpaste_timeout(self, monitor):
-        with patch(
-            "context_core.watcher.clipboard_monitor.subprocess.run",
-            side_effect=subprocess.TimeoutExpired(cmd="pbpaste", timeout=2),
-        ):
-            assert monitor._get_clipboard() is None
+        with patch("context_core.watcher.clipboard_monitor.shutil.which", return_value="/usr/bin/pbpaste"):
+            with patch(
+                "context_core.watcher.clipboard_monitor.subprocess.run",
+                side_effect=subprocess.TimeoutExpired(cmd="pbpaste", timeout=2),
+            ):
+                assert monitor._get_clipboard() is None
 
     def test_pbpaste_not_found(self, monitor):
-        with patch(
-            "context_core.watcher.clipboard_monitor.subprocess.run",
-            side_effect=FileNotFoundError,
-        ):
-            assert monitor._get_clipboard() is None
+        with patch("context_core.watcher.clipboard_monitor.shutil.which", return_value="/usr/bin/pbpaste"):
+            with patch(
+                "context_core.watcher.clipboard_monitor.subprocess.run",
+                side_effect=FileNotFoundError,
+            ):
+                assert monitor._get_clipboard() is None
 
 
 class TestLifecycle:
