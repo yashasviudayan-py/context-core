@@ -1,0 +1,56 @@
+# Bandit security scanner configuration
+
+[bandit]
+# Exclude test directories from some checks
+exclude_dirs = ["/tests/", "/.venv/", "/build/", "/dist/"]
+
+# Skip specific test IDs
+skips = [
+    # B603: subprocess without shell=True is safe (we use list args)
+    "B603",
+    # B607: Starting process with partial executable path (ollama, pbpaste are in PATH)
+    "B607",
+]
+
+# Only run these specific tests (high/medium severity security issues)
+tests = [
+    # Injections
+    "B201",  # Flask app debug=True
+    "B301",  # Pickle usage
+    "B302",  # Marshal usage
+    "B303",  # MD5 or SHA1 usage
+    "B304",  # Insecure ciphers
+    "B305",  # Insecure cipher modes
+    "B306",  # Insecure mktemp usage
+    "B307",  # eval() usage
+    "B308",  # mark_safe usage
+    "B310",  # urllib urlopen
+    "B311",  # Random for cryptographic purposes
+    "B312",  # Telnet usage
+    "B313",  # XML vulnerabilities
+    "B314",  # XML vulnerabilities
+    "B315",  # XML vulnerabilities
+    "B316",  # XML vulnerabilities
+    "B317",  # XML vulnerabilities
+    "B318",  # XML vulnerabilities
+    "B319",  # XML vulnerabilities
+    "B320",  # XML vulnerabilities
+    "B321",  # FTP usage
+    "B323",  # Unverified context
+    # Shell injection (but we skip B603/B607 for safe usage)
+    "B601",  # Parameterized shell commands
+    "B602",  # Shell injection via Popen with shell=True
+    "B604",  # Function call with shell=True
+    "B605",  # Starting process with shell=True
+    "B606",  # Starting process without shell
+    # SSL/TLS
+    "B501",  # Request with verify=False
+    "B502",  # SSL with bad version
+    "B503",  # SSL with bad defaults
+    "B504",  # SSL with no hostname checking
+    "B505",  # Weak cryptographic key
+    "B506",  # Unsafe YAML load
+    "B507",  # SSH with missing host key policy
+    "B508",  # SNMPv1/v2
+    "B509",  # SNMP weakCrypto
+]

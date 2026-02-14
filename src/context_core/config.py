@@ -42,4 +42,8 @@ class VaultConfig:
         "cat", "less", "more", "head", "tail", "man",
     })
 
+    # Security settings
+    enable_secret_filtering: bool = True
+    log_blocked_secrets: bool = True
+
 DEFAULT_CONFIG = VaultConfig()

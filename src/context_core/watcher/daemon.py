@@ -4,6 +4,7 @@ import signal
 import sys
 import time
 import subprocess
+import fcntl
 from pathlib import Path
 
 from context_core.vault import Vault
@@ -16,7 +17,24 @@ import tempfile
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_LOG_PATH = Path(tempfile.gettempdir()) / "context_core_watcher.log"
+
+def _get_secure_log_path() -> Path:
+    """Get secure log path with restricted permissions."""
+    if os.name == 'posix':
+        # Use user-specific directory with restricted permissions
+        log_dir = Path.home() / ".local" / "share" / "context-core" / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        return log_dir / "watcher.log"
+    else:
+        # Windows: use LOCALAPPDATA
+        log_dir_str = os.environ.get('LOCALAPPDATA', str(Path.home()))
+        log_dir = Path(log_dir_str) / "ContextCore" / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        return log_dir / "watcher.log"
+
+
+DEFAULT_LOG_PATH = _get_secure_log_path()
+LOCK_FILE = Path(tempfile.gettempdir()) / "context_core_daemon.lock"
 
 
 class WatcherDaemon:
@@ -49,6 +67,10 @@ class WatcherDaemon:
             level=logging.INFO,
             format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
         )
+
+        # Ensure log file has restrictive permissions (owner read/write only)
+        if os.name == 'posix' and DEFAULT_LOG_PATH.exists():
+            os.chmod(DEFAULT_LOG_PATH, 0o600)
 
         logger.info(f"Watcher daemon starting (PID={os.getpid()})")
 
@@ -112,37 +134,56 @@ def start_daemon(foreground: bool = False) -> int:
     Otherwise, spawns a background process.
     Returns the daemon PID.
     """
-    # TODO: Implement a file-based lock to prevent race conditions
-    # where multiple processes try to start the daemon at the same time.
-    # The current check is a good-enough mitigation for now.
-    state = WatcherState()
-    existing_pid = state.get_daemon_pid()
-    if existing_pid and _is_process_running(existing_pid):
-        return existing_pid
+    # Use file-based lock to prevent race conditions
+    lock_fd = os.open(LOCK_FILE, os.O_CREAT | os.O_RDWR, 0o600)
 
-    if foreground:
-        daemon = WatcherDaemon(state)
-        daemon.run()
-        return os.getpid()
-    else:
-        read_pipe, write_pipe = os.pipe()
-        proc = subprocess.Popen(
-            [sys.executable, "-m", "context_core.watcher.daemon", str(write_pipe)],
-            pass_fds=[write_pipe],
-            start_new_session=True,
-        )
-        os.close(write_pipe)
+    try:
+        # Non-blocking exclusive lock
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        # Another process holds the lock (daemon starting/running)
+        os.close(lock_fd)
+        # Wait briefly and check state
+        time.sleep(0.5)
+        state = WatcherState()
+        pid = state.get_daemon_pid()
+        if pid and _is_process_running(pid):
+            return pid
+        raise RuntimeError("Daemon lock held but no process running. Please try again.")
 
-        # Wait for daemon to be ready
-        os.read(read_pipe, 1)
-        os.close(read_pipe)
+    try:
+        state = WatcherState()
+        existing_pid = state.get_daemon_pid()
+        if existing_pid and _is_process_running(existing_pid):
+            return existing_pid
 
-        time.sleep(0.1)  # Give it a moment to stabilize
-        if proc.poll() is not None:
-            raise RuntimeError("Daemon failed to start")
+        if foreground:
+            daemon = WatcherDaemon(state)
+            daemon.run()
+            return os.getpid()
+        else:
+            read_pipe, write_pipe = os.pipe()
+            proc = subprocess.Popen(
+                [sys.executable, "-m", "context_core.watcher.daemon", str(write_pipe)],
+                pass_fds=[write_pipe],
+                start_new_session=True,
+            )
+            os.close(write_pipe)
 
-        state.set_daemon_pid(proc.pid)
-        return proc.pid
+            # Wait for daemon to be ready
+            os.read(read_pipe, 1)
+            os.close(read_pipe)
+
+            time.sleep(0.1)  # Give it a moment to stabilize
+            if proc.poll() is not None:
+                raise RuntimeError("Daemon failed to start")
+
+            state.set_daemon_pid(proc.pid)
+            return proc.pid
+    finally:
+        # Release lock
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        os.close(lock_fd)
 
 
 def stop_daemon(timeout: int = 10) -> bool:
