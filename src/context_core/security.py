@@ -45,7 +45,7 @@ class SecretDetector:
         ),
         SecretPattern(
             name="aws_access_key",
-            pattern=re.compile(r'\bAKIA[0-9A-Z]{16}\b', re.MULTILINE),
+            pattern=re.compile(r"\bAKIA[0-9A-Z]{16}\b", re.MULTILINE),
             description="AWS Access Key IDs",
         ),
         SecretPattern(
@@ -59,7 +59,7 @@ class SecretDetector:
         SecretPattern(
             name="private_key",
             pattern=re.compile(
-                r'-----BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----',
+                r"-----BEGIN\s+(?:RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----",
                 re.MULTILINE,
             ),
             description="Private cryptographic keys (RSA, EC, SSH)",
@@ -67,24 +67,24 @@ class SecretDetector:
         SecretPattern(
             name="jwt",
             pattern=re.compile(
-                r'\beyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\b',
+                r"\beyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\b",
                 re.MULTILINE,
             ),
             description="JSON Web Tokens (JWT)",
         ),
         SecretPattern(
             name="github_token",
-            pattern=re.compile(r'\bgh[pousr]_[A-Za-z0-9_]{36,}\b', re.MULTILINE),
+            pattern=re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{36,}\b", re.MULTILINE),
             description="GitHub Personal Access Tokens",
         ),
         SecretPattern(
             name="github_oauth",
-            pattern=re.compile(r'\bgho_[A-Za-z0-9_]{36,}\b', re.MULTILINE),
+            pattern=re.compile(r"\bgho_[A-Za-z0-9_]{36,}\b", re.MULTILINE),
             description="GitHub OAuth Tokens",
         ),
         SecretPattern(
             name="slack_token",
-            pattern=re.compile(r'\bxox[baprs]-[0-9a-zA-Z\-]{10,}\b', re.MULTILINE),
+            pattern=re.compile(r"\bxox[baprs]-[0-9a-zA-Z\-]{10,}\b", re.MULTILINE),
             description="Slack API tokens",
         ),
         SecretPattern(
@@ -97,18 +97,18 @@ class SecretDetector:
         ),
         SecretPattern(
             name="google_api_key",
-            pattern=re.compile(r'\bAIza[0-9A-Za-z_-]{35}\b', re.MULTILINE),
+            pattern=re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b", re.MULTILINE),
             description="Google API Keys",
         ),
         SecretPattern(
             name="stripe_key",
-            pattern=re.compile(r'\b[sr]k_live_[0-9a-zA-Z]{24,}\b', re.MULTILINE),
+            pattern=re.compile(r"\b[sr]k_live_[0-9a-zA-Z]{24,}\b", re.MULTILINE),
             description="Stripe API keys (live)",
         ),
         SecretPattern(
             name="database_url",
             pattern=re.compile(
-                r'(?i)(?:mysql|postgres|mongodb|redis)://[a-zA-Z0-9_\-]+:[a-zA-Z0-9_\-@!#$%^&*()+=]{8,}@',
+                r"(?i)(?:mysql|postgres|mongodb|redis)://[a-zA-Z0-9_\-]+:[a-zA-Z0-9_\-@!#$%^&*()+=]{8,}@",
                 re.MULTILINE,
             ),
             description="Database connection strings with credentials",

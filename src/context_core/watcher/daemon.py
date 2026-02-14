@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 def _get_secure_log_path() -> Path:
     """Get secure log path with restricted permissions."""
-    if os.name == 'posix':
+    if os.name == "posix":
         # Use user-specific directory with restricted permissions
         log_dir = Path.home() / ".local" / "share" / "context-core" / "logs"
         log_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         return log_dir / "watcher.log"
     else:
         # Windows: use LOCALAPPDATA
-        log_dir_str = os.environ.get('LOCALAPPDATA', str(Path.home()))
+        log_dir_str = os.environ.get("LOCALAPPDATA", str(Path.home()))
         log_dir = Path(log_dir_str) / "ContextCore" / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir / "watcher.log"
@@ -69,7 +69,7 @@ class WatcherDaemon:
         )
 
         # Ensure log file has restrictive permissions (owner read/write only)
-        if os.name == 'posix' and DEFAULT_LOG_PATH.exists():
+        if os.name == "posix" and DEFAULT_LOG_PATH.exists():
             os.chmod(DEFAULT_LOG_PATH, 0o600)
 
         logger.info(f"Watcher daemon starting (PID={os.getpid()})")

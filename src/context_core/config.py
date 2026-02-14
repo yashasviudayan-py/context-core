@@ -11,9 +11,25 @@ class VaultConfig:
     ollama_url: str = "http://localhost:11434/api/embeddings"
     embedding_model: str = "nomic-embed-text"
     supported_extensions: tuple[str, ...] = (
-        ".py", ".md", ".txt", ".js", ".ts", ".jsx", ".tsx",
-        ".json", ".yaml", ".yml", ".toml", ".sh", ".bash",
-        ".css", ".html", ".sql", ".rs", ".go", ".java",
+        ".py",
+        ".md",
+        ".txt",
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".sh",
+        ".bash",
+        ".css",
+        ".html",
+        ".sql",
+        ".rs",
+        ".go",
+        ".java",
     )
     max_file_size_bytes: int = 1_048_576  # 1 MB
     max_chunk_chars: int = 6000  # ~1500 tokens, safe for 8192-token embedding models
@@ -37,13 +53,27 @@ class VaultConfig:
     history_poll_interval: float = 30.0
     history_batch_size: int = 20
     history_min_command_length: int = 5
-    history_skip_commands: frozenset[str] = frozenset({
-        "ls", "cd", "pwd", "clear", "exit", "which", "echo",
-        "cat", "less", "more", "head", "tail", "man",
-    })
+    history_skip_commands: frozenset[str] = frozenset(
+        {
+            "ls",
+            "cd",
+            "pwd",
+            "clear",
+            "exit",
+            "which",
+            "echo",
+            "cat",
+            "less",
+            "more",
+            "head",
+            "tail",
+            "man",
+        }
+    )
 
     # Security settings
     enable_secret_filtering: bool = True
     log_blocked_secrets: bool = True
+
 
 DEFAULT_CONFIG = VaultConfig()

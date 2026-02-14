@@ -77,26 +77,26 @@ class WatcherState:
                 "SELECT * FROM watched_directories WHERE path = ?", (path,)
             ).fetchone()
         return WatchedDirectory(
-            id=row["id"], path=row["path"],
-            added_at=row["added_at"], recursive=bool(row["recursive"]),
+            id=row["id"],
+            path=row["path"],
+            added_at=row["added_at"],
+            recursive=bool(row["recursive"]),
         )
 
     def remove_directory(self, path: str) -> bool:
         with self._lock:
-            cursor = self._conn.execute(
-                "DELETE FROM watched_directories WHERE path = ?", (path,)
-            )
+            cursor = self._conn.execute("DELETE FROM watched_directories WHERE path = ?", (path,))
             self._conn.commit()
             return cursor.rowcount > 0
 
     def list_directories(self) -> list[WatchedDirectory]:
-        rows = self._conn.execute(
-            "SELECT * FROM watched_directories ORDER BY added_at"
-        ).fetchall()
+        rows = self._conn.execute("SELECT * FROM watched_directories ORDER BY added_at").fetchall()
         return [
             WatchedDirectory(
-                id=r["id"], path=r["path"],
-                added_at=r["added_at"], recursive=bool(r["recursive"]),
+                id=r["id"],
+                path=r["path"],
+                added_at=r["added_at"],
+                recursive=bool(r["recursive"]),
             )
             for r in rows
         ]
@@ -131,9 +131,7 @@ class WatcherState:
     # --- Clipboard State ---
 
     def get_last_clipboard_hash(self) -> str:
-        row = self._conn.execute(
-            "SELECT last_hash FROM clipboard_state WHERE id = 1"
-        ).fetchone()
+        row = self._conn.execute("SELECT last_hash FROM clipboard_state WHERE id = 1").fetchone()
         return row["last_hash"] if row else ""
 
     def set_last_clipboard_hash(self, hash_val: str) -> None:
@@ -152,9 +150,7 @@ class WatcherState:
     # --- History State ---
 
     def get_last_history_line(self) -> int:
-        row = self._conn.execute(
-            "SELECT last_line_num FROM history_state WHERE id = 1"
-        ).fetchone()
+        row = self._conn.execute("SELECT last_line_num FROM history_state WHERE id = 1").fetchone()
         return row["last_line_num"] if row else 0
 
     def set_last_history_line(self, line_num: int) -> None:

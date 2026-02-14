@@ -61,13 +61,15 @@ class Vault:
         if results["ids"] and results["ids"][0]:
             for i, doc_id in enumerate(results["ids"][0]):
                 distance = results["distances"][0][i]
-                search_results.append(SearchResult(
-                    content=results["documents"][0][i],
-                    metadata=results["metadatas"][0][i],
-                    distance=distance,
-                    similarity=1.0 - distance,
-                    document_id=doc_id,
-                ))
+                search_results.append(
+                    SearchResult(
+                        content=results["documents"][0][i],
+                        metadata=results["metadatas"][0][i],
+                        distance=distance,
+                        similarity=1.0 - distance,
+                        document_id=doc_id,
+                    )
+                )
         return search_results
 
     def delete(self, ids: list[str]) -> None:

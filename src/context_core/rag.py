@@ -81,7 +81,10 @@ class RAGPipeline:
         messages = build_messages(query_text, context, history)
 
         response_text = ollama_client.chat(
-            self.config.ollama_base_url, model, messages, self.config.chat_temperature,
+            self.config.ollama_base_url,
+            model,
+            messages,
+            self.config.chat_temperature,
         )
 
         return ChatResponse(
@@ -103,6 +106,9 @@ class RAGPipeline:
         messages = build_messages(query_text, context, history)
 
         stream = ollama_client.chat_stream(
-            self.config.ollama_base_url, model, messages, self.config.chat_temperature,
+            self.config.ollama_base_url,
+            model,
+            messages,
+            self.config.chat_temperature,
         )
         return stream, results

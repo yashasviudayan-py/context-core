@@ -1,4 +1,3 @@
-
 from context_core.ingest import create_manual_document, read_file, ingest_directory
 from context_core.config import VaultConfig
 

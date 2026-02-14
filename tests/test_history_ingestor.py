@@ -1,9 +1,9 @@
 import pytest
 
-from context_core.config import VaultConfig
 from context_core.watcher.history_ingestor import HistoryIngestor
 from context_core.watcher.state import WatcherState
 from unittest.mock import MagicMock
+
 
 @pytest.fixture
 def state(tmp_path):
@@ -25,13 +25,13 @@ def history_file(tmp_path):
     )
     return path
 
+
 @pytest.fixture
 def mock_vault():
     return MagicMock()
 
 
 class TestParseHistoryLine:
-
     def test_plain_format(self):
         ingestor = HistoryIngestor(MagicMock(), MagicMock())
         ingestor.shell_name = "zsh"
@@ -81,7 +81,9 @@ class TestParseHistoryLine:
 
 class TestIngestNewCommands:
     def test_ingest_from_start(self, mock_vault, state, history_file, monkeypatch):
-        monkeypatch.setattr(HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file))
+        monkeypatch.setattr(
+            HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file)
+        )
         ingestor = HistoryIngestor(mock_vault, state)
         count = ingestor._ingest_new_commands()
         # git status, python train.py, docker compose, kubectl get pods = 4
@@ -90,7 +92,9 @@ class TestIngestNewCommands:
         assert state.get_last_history_line() == 6
 
     def test_ingest_incremental(self, mock_vault, state, history_file, monkeypatch):
-        monkeypatch.setattr(HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file))
+        monkeypatch.setattr(
+            HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file)
+        )
         ingestor = HistoryIngestor(mock_vault, state)
         ingestor._ingest_new_commands()
 
@@ -104,20 +108,26 @@ class TestIngestNewCommands:
         assert state.get_last_history_line() == 8
 
     def test_no_new_lines(self, mock_vault, state, history_file, monkeypatch):
-        monkeypatch.setattr(HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file))
+        monkeypatch.setattr(
+            HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file)
+        )
         ingestor = HistoryIngestor(mock_vault, state)
         ingestor._ingest_new_commands()
         count = ingestor._ingest_new_commands()
         assert count == 0
 
     def test_nonexistent_file(self, mock_vault, state, tmp_path, monkeypatch):
-        monkeypatch.setattr(HistoryIngestor, "_get_history_path", lambda self: ("zsh", tmp_path / "nonexistent"))
+        monkeypatch.setattr(
+            HistoryIngestor, "_get_history_path", lambda self: ("zsh", tmp_path / "nonexistent")
+        )
         ingestor = HistoryIngestor(mock_vault, state)
         count = ingestor._ingest_new_commands()
         assert count == 0
 
     def test_file_truncation_resets(self, mock_vault, state, history_file, monkeypatch):
-        monkeypatch.setattr(HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file))
+        monkeypatch.setattr(
+            HistoryIngestor, "_get_history_path", lambda self: ("zsh", history_file)
+        )
         ingestor = HistoryIngestor(mock_vault, state)
         ingestor._ingest_new_commands()
         assert state.get_last_history_line() == 6

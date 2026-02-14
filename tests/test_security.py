@@ -63,7 +63,7 @@ class TestSecretDetector:
         """Detect bearer tokens."""
         detector = SecretDetector()
         test_cases = [
-            'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ',
+            "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
             "bearer_token=abcd1234efgh5678ijkl9012mnop",
             'token: "my_secret_authentication_token_here"',
         ]
@@ -190,11 +190,11 @@ class TestSecretDetector:
     def test_multiple_secrets(self):
         """Detect multiple secrets in same text."""
         detector = SecretDetector()
-        text = '''
+        text = """
         export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
         export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
         mysql -p SuperSecretPassword123
-        '''
+        """
         assert detector.contains_secret(text)
         patterns = detector.get_matched_patterns(text)
         assert len(patterns) >= 2  # Should detect multiple patterns
@@ -242,7 +242,7 @@ class TestSecretDetector:
         elapsed = time.time() - start
 
         # Should process 100 checks in well under 1 second (target < 10ms each)
-        assert elapsed < 1.0, f"Secret detection too slow: {elapsed*10:.2f}ms per check"
+        assert elapsed < 1.0, f"Secret detection too slow: {elapsed * 10:.2f}ms per check"
 
 
 class TestClipboardMonitorIntegration:
@@ -286,7 +286,11 @@ class TestClipboardMonitorIntegration:
         """Clipboard with secrets should be blocked."""
         monitor = ClipboardMonitor(mock_vault, mock_state, config_with_filtering)
 
-        with patch.object(monitor, "_get_clipboard", return_value='API_KEY="sk-1234567890abcdefghijklmnopqrstuvwxyz"'):
+        with patch.object(
+            monitor,
+            "_get_clipboard",
+            return_value='API_KEY="sk-1234567890abcdefghijklmnopqrstuvwxyz"',
+        ):
             result = monitor.check_and_ingest()
 
         assert result is False
@@ -302,7 +306,9 @@ class TestClipboardMonitorIntegration:
         assert result is True
         mock_vault.add.assert_called_once()
 
-    def test_filtering_disabled_allows_secrets(self, mock_vault, mock_state, config_without_filtering):
+    def test_filtering_disabled_allows_secrets(
+        self, mock_vault, mock_state, config_without_filtering
+    ):
         """With filtering disabled, secrets should be allowed."""
         monitor = ClipboardMonitor(mock_vault, mock_state, config_without_filtering)
 
@@ -341,10 +347,10 @@ class TestHistoryIngestorIntegration:
 
         # Test various secret patterns in commands
         secret_commands = [
-            'mysql -p SuperSecret123',
-            'export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE',
+            "mysql -p SuperSecret123",
+            "export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE",
             'curl -H "Authorization: Bearer sk-1234567890abcdefghijklmnopqrstuvwxyz"',
-            'docker login -u user -p MyPassword123456',
+            "docker login -u user -p MyPassword123456",
         ]
 
         for cmd in secret_commands:
@@ -375,7 +381,7 @@ class TestHistoryIngestorIntegration:
         state = MagicMock()
         ingestor = HistoryIngestor(vault, state, config_without_filtering)
 
-        result = ingestor.parse_history_line('export SECRET_KEY=MySecretValue12345678901234567890')
+        result = ingestor.parse_history_line("export SECRET_KEY=MySecretValue12345678901234567890")
         assert result is not None
 
 
@@ -384,7 +390,7 @@ class TestFalsePositives:
 
     def test_documentation_text(self):
         """Documentation about passwords should not be flagged."""
-        detector = SecretDetector()
+        # Test that documentation doesn't crash the detector
         docs = [
             "The password should be at least 8 characters.",
             "This function validates the API key format.",
@@ -397,7 +403,7 @@ class TestFalsePositives:
 
     def test_code_examples(self):
         """Generic code examples without real secrets should ideally pass."""
-        detector = SecretDetector()
+        # Test that code examples don't crash the detector
         code_examples = [
             "const key = process.env.API_KEY;",
             "password = input('Enter password: ')",
