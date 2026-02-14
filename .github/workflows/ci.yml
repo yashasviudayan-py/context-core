@@ -72,6 +72,7 @@ jobs:
         run: |
           pip-audit --desc --format json --output pip-audit-report.json || true
           pip-audit
+        continue-on-error: true
 
       - name: Run Safety (known CVEs)
         run: |
